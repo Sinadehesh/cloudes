@@ -1,0 +1,6 @@
+{
+  "name": "play-billing",
+  "version": "1.0.0",
+  "description": "CloudLock's one-time in-app purchase (CloudLock Plus) through Google Play Billing",
+  "private": true
+}

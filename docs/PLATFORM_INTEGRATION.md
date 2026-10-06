@@ -1,0 +1,105 @@
+# Platform integration: how the lock actually reaches the user
+
+The JS app (daily lessons, quiz, cloud guide) is platform-neutral. The part that
+intercepts Instagram/TikTok is native and differs a lot between iOS and Android.
+All of it plugs into the `AppBlocker` interface in `src/blocker/index.ts`. The
+challenge screen already calls `blocker.grantTemporaryAccess(source, minutes)`
+on a correct answer.
+
+Both platforms open the same route: `cloudlock://challenge?source=<app name>`.
+
+---
+
+## iOS: Screen Time API (FamilyControls, ManagedSettings, DeviceActivity)
+
+### Correction to the original pitch
+
+Apple lets you customise the shield, but **the shield itself cannot host the
+quiz.** A `ShieldConfigurationDataSource` can only set a background colour/blur,
+an icon, a title, a subtitle and up to two buttons. There are no custom views,
+text fields or image galleries in it. A `ShieldActionDelegate` can react to those
+button taps, but it **cannot open your app directly**.
+
+The flow used by shipping apps (Opal, one sec, etc.) works around this:
+
+1. The shield shows a 🍄 icon, "Instagram is resting", "Name a cloud to unlock",
+   and the primary button **"Identify a cloud"**.
+2. The `ShieldAction` extension handles the tap by posting a **local notification**
+   ("Tap to identify your cloud") whose payload deep-links to
+   `cloudlock://challenge?source=Instagram`, and responds `.close`/`.defer`.
+3. The user taps the notification. CloudLock opens on the challenge screen.
+4. On a correct answer, the app removes that app's token from the
+   `ManagedSettingsStore` shield set and starts a `DeviceActivity` schedule of
+   `unlockMinutes`. The `DeviceActivityMonitor` extension re-applies the
+   shield when the interval ends, even if CloudLock is killed.
+
+That's one extra tap. It feels fine, and the notification step adds a little
+friction of its own.
+
+### Other iOS constraints
+
+- **Entitlement:** `com.apple.developer.family-controls` works in development
+  right away. **Distribution (TestFlight/App Store) needs Apple's approval**, which
+  you request via the Family Controls entitlement request form. Request it early:
+  it can take weeks.
+- **Opaque tokens:** `FamilyActivityPicker` returns `ApplicationToken`s, not bundle
+  IDs or names. You can't show "Instagram" in your own UI from a token, but
+  `Label(token)` in SwiftUI renders the name and icon. For the `source` query
+  param, pass the app's display name from the shield extension, which receives the
+  `Application` and its `localizedDisplayName`.
+- **Extensions share state via an App Group** (`group.com.cloudlock.app`):
+  selected tokens, unlock expiry, difficulty.
+- **Implementation path in Expo:** the
+  [`react-native-device-activity`](https://github.com/kingstinct/react-native-device-activity)
+  package ships an Expo config plugin that generates the ShieldConfiguration,
+  ShieldAction and DeviceActivityMonitor extension targets. It exposes the picker
+  and shield APIs to JS. Start there before writing your own targets.
+
+## Android: UsageStats + overlay permission
+
+### What the pitch gets right, and what needs adjusting
+
+- **Detection:** `UsageStatsManager.queryEvents()` polled from a **foreground
+  service** (every ~500 ms while the screen is on) catches `ACTIVITY_RESUMED`
+  for blocked packages. It needs the special **Usage Access** permission
+  (`PACKAGE_USAGE_STATS`), which the user grants in system settings.
+- **Showing the quiz:** rather than drawing a `SYSTEM_ALERT_WINDOW` overlay with
+  custom views, launch CloudLock's own activity with the deep link
+  (`FLAG_ACTIVITY_NEW_TASK`). That reuses the React Native challenge screen.
+  Android 10+ blocks background activity starts, **but apps holding
+  `SYSTEM_ALERT_WINDOW` ("Display over other apps") are exempt**, so you still
+  request that permission, just for a different reason.
+- **Foreground service type:** Android 14+ requires a declared type. Use
+  `specialUse` with a
+  `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` explanation, and expect Play to ask about it.
+- **Do not use AccessibilityService** for this. Google Play restricts it to
+  accessibility tools, and it's the "hacky" route the pitch rightly avoids.
+- **Play Console declarations:** Usage Access and the special-use foreground
+  service both require a declaration and a short video of the feature. The
+  The daily lessons' standalone study value helps the "core functionality" argument.
+- **Battery optimisation:** some OEMs (Xiaomi, Huawei, Samsung) kill foreground
+  services aggressively. Add a "keep CloudLock running" help screen that links
+  to the battery optimisation exemption.
+- **Unlock window:** the service keeps `unlockedUntil[package]` and ignores that
+  package until the window expires.
+
+**Implemented** in `modules/app-blocker` (a local Expo module, autolinked):
+`BlockerService.kt` polls usage events every 600 ms and opens
+`cloudlock://challenge?source=<label>&package=<pkg>`. `BootReceiver.kt`
+restarts it after a reboot, and `AppBlockerModule.kt` is the JS API. Its
+`AndroidManifest.xml` is merged into the app, so no config plugin is needed.
+Unlock windows are stored per app in SharedPreferences.
+
+## Shared: offline content
+
+- Everything works offline. Photos are bundled under `assets/clouds/`, and
+  progress lives in AsyncStorage.
+- Budget: 3 photos per cloud at 1000 px (mozjpeg, quality 74) averages about
+  105 KB per photo, so today's 70 clouds take 22 MB. At 400 clouds that
+  would be about 125 MB. At that size, bundle 1–2 photos per cloud and
+  download the rest on demand, or switch to WebP.
+- **Licensing:** photos come from Flickr via Openverse. Only CC0, public domain, CC BY and CC BY-SA
+  are allowed; CC BY-NC is excluded because the app may be sold. CC BY and
+  CC BY-SA require visible attribution. The credit line under each photo and
+  the Credits screen cover that. `scripts/download-cloud-photos.mjs` enforces the
+  licence allow-list, and `scripts/cloud-photos.json` records each photo's author and source.
