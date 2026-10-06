@@ -8,6 +8,7 @@ import { CluesList, Lookalikes, SafetyNote } from '../../components/CloudFacts';
 import { Card, SectionTitle } from '../../components/ui';
 import { MASTERED_STEP } from '../../core/daily';
 import { lookalikesOf } from '../../core/quiz';
+import { CLOUD_DETAILS } from '../../data/cloudDetails';
 import { CLOUD_IMAGES } from '../../data/cloudImages.generated';
 import { CLOUDS, CLOUDS_BY_ID } from '../../data/clouds';
 import { useStore } from '../../state/store';
@@ -26,6 +27,7 @@ export default function CloudDetail() {
   const stats = state.stats[cloud.id];
   const photoCount = CLOUD_IMAGES[cloud.id]?.length ?? 0;
   const lookalikes = lookalikesOf(cloud, CLOUDS);
+  const details = CLOUD_DETAILS[cloud.id];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -64,6 +66,30 @@ export default function CloudDetail() {
       <SectionTitle>How to recognise it</SectionTitle>
       <CluesList cloud={cloud} />
 
+      {details && (
+        <>
+          <SectionTitle>About</SectionTitle>
+          <Paragraph>{details.about}</Paragraph>
+
+          <SectionTitle>Where and when to see it</SectionTitle>
+          <Paragraph>{details.where}</Paragraph>
+
+          {details.lore && (
+            <>
+              <SectionTitle>Lore</SectionTitle>
+              <Paragraph>{details.lore}</Paragraph>
+            </>
+          )}
+
+          {details.saying && (
+            <>
+              <SectionTitle>Weather saying</SectionTitle>
+              <Paragraph>{`“${details.saying}”`}</Paragraph>
+            </>
+          )}
+        </>
+      )}
+
       <SectionTitle>Details</SectionTitle>
       <Detail label="Family" value={cloud.family} />
       <Detail label="Group" value={CATEGORY_LABEL[cloud.category]} />
@@ -98,6 +124,11 @@ function formatDay(day: string): string {
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function Paragraph({ children }: { children: string }) {
+  const c = useColors();
+  return <Text style={[styles.paragraph, { color: c.text }]}>{children}</Text>;
+}
+
 function Detail({ label, value }: { label: string; value: string }) {
   const c = useColors();
   return (
@@ -116,6 +147,7 @@ const styles = StyleSheet.create({
   name: { fontSize: 32, fontWeight: '700', marginTop: 16 },
   sci: { fontSize: 18, fontStyle: 'italic' },
   fact: { fontSize: 17, lineHeight: 25 },
+  paragraph: { fontSize: 16, lineHeight: 24 },
   detail: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -34,7 +34,8 @@ Everything runs offline; nothing leaves the phone ([privacy policy](PRIVACY.md))
 Each cloud has a weather meaning (fair weather, weather may change, rain or snow, thunderstorms, dangerous weather),
 field clues (height, look, what it's made of, the weather it brings, when it's seen, and the one feature that gives
 it away) and look-alikes, such as altocumulus vs. cirrocumulus vs. stratocumulus (the classic "finger, thumb or fist
-at arm's length" test).
+at arm's length" test). Its page in the collection adds what it is, where and when to see it, its lore and name,
+and the old weather saying that goes with it (`src/data/cloudDetails.ts`), like FloraLock's plant pages.
 
 ## Learning model
 

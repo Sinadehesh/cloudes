@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { CLOUD_CLUES } from '../data/cloudClues';
+import { CLOUD_DETAILS } from '../data/cloudDetails';
 import { privacyHtml, privacyMarkdown } from '../data/privacyPolicy';
 import { CLOUDS, CLOUDS_BY_ID } from '../data/clouds';
 import { challengeReducer, penaltySecondsLeft, startChallenge } from './challenge';
@@ -74,6 +75,14 @@ describe('cloud data', () => {
     expect(Object.keys(CLOUD_CLUES).sort()).toEqual(ids(CLOUDS).sort());
     for (const clues of Object.values(CLOUD_CLUES)) {
       expect(Object.values(clues).every((v) => v.trim().length > 0)).toBe(true);
+    }
+  });
+
+  it('has cloud-page details for exactly the clouds in the deck', () => {
+    expect(Object.keys(CLOUD_DETAILS).sort()).toEqual(ids(CLOUDS).sort());
+    for (const [id, d] of Object.entries(CLOUD_DETAILS)) {
+      expect(d.about.trim() && d.where.trim(), id).toBeTruthy();
+      for (const text of [d.about, d.where, d.lore, d.saying]) if (text) expect(text, id).not.toMatch(/'/);
     }
   });
 
