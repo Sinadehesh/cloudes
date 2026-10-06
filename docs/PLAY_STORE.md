@@ -32,6 +32,8 @@ the build. It should match the upload key, and Play Console → Setup → App si
 
 1. Create the app with package name `com.cloudlock.app`, then upload `cloudlock-aab` from a workflow run to
    **Testing → Internal testing**.
+   Fill in **Store presence → Main store listing** from [`store/listing.md`](../store/listing.md) (name,
+   descriptions, graphics and screenshots, all ready to paste or upload).
 2. **App content:**
    - **Privacy policy:** `https://www.sinadehesh.com/cloudlock/privacy/`. The page is generated into `site/`
      (at `privacy/` and `cloudlock/privacy/`) from `src/data/privacyPolicy.ts` by `npm run privacy`, together
