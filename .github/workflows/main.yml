@@ -98,6 +98,9 @@ jobs:
           # ~/.gradle) are made relative, so they don't change the cache keys between runs.
           CCACHE_BASEDIR: /home/runner
           CCACHE_MAXSIZE: 1500M
+          # The NDK is downloaded fresh in every build, so its files' timestamps always change;
+          # recognise the compiler by its version instead.
+          CCACHE_COMPILERCHECK: '%compiler% --version'
           # Release builds compile with debug info, and by default ccache then keys every file on the
           # directory it is compiled in; the generated android/ project must not cost cache hits.
           CCACHE_NOHASHDIR: 'true'
@@ -113,10 +116,6 @@ jobs:
         if: always()
         run: |
           ccache --show-stats --verbose
-          # To compare between runs: the compiler's timestamp and one fixed file's full ccache record.
-          stat -c 'compiler mtime %Y size %s' /usr/local/lib/android/sdk/ndk/*/toolchains/llvm/prebuilt/linux-x86_64/bin/clang-[0-9]* || true
-          pid=$(grep -m 1 -E 'Source file: .*react-native-safe-area-context/.*\.cpp$' "$RUNNER_TEMP/ccache.log" | grep -oE '^\[[^]]* [0-9]+' | awk '{print $2}')
-          [ -n "$pid" ] && grep -E "^\[[^ ]+ $pid +\]" "$RUNNER_TEMP/ccache.log" | grep -v ' Config: ' | cut -c 35- | head -n 40 || true
 
       # Compare with the upload key's SHA-256 in Play Console (Setup > App signing).
       - name: Show signing certificate
