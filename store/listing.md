@@ -41,7 +41,7 @@ WHAT'S INSIDE
 
 FREE, WITH AN OPTIONAL UPGRADE
 • Free: Lock up to 2 apps and learn the ten main cloud types.
-• CloudLock Plus (one-time purchase, no subscription): Unlimited locked apps and all 36 clouds, including species and rare clouds.
+• CloudLock Plus: Unlimited locked apps and all 36 clouds, including species and rare clouds. Buy it once, or pay monthly and cancel anytime.
 
 PRIVATE AND OFFLINE
 No account, no ads, no analytics. Everything stays on your phone and works offline.

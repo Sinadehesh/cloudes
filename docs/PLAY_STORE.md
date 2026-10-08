@@ -60,8 +60,7 @@ the build. It should match the upload key, and Play Console → Setup → App si
 
 ## 3. CloudLock Plus (the in-app purchase)
 
-The free version locks up to 2 apps and teaches the 10 main cloud types. **CloudLock Plus** is a one-time purchase
-that unlocks unlimited apps and the 26 species and special clouds (lenticular, mammatus, shelf clouds and more). The rules live in `src/core/plus.ts`; the purchase goes
+The free version locks up to 2 apps and teaches the 10 main cloud types. **CloudLock Plus** unlocks unlimited apps and the 26 species and special clouds (lenticular, mammatus, shelf clouds and more). It's sold two ways: a one-time purchase, or a monthly subscription that keeps Plus while it's active; a one-time purchase wins over a subscription (`plusFromOwned`). The rules live in `src/core/plus.ts`; the purchase goes
 through Google Play Billing in `modules/play-billing`.
 
 1. **Payments profile:** Play Console → Setup → Payments profile. Add your bank and tax details; Google won't
@@ -71,14 +70,21 @@ through Google Play Billing in `modules/play-billing`.
 3. **Create the product:** Monetize with Play → Products → One-time products → Create:
    - Product ID: `cloudlock_plus` (must match exactly; it can never be changed or reused)
    - Name: CloudLock Plus · Description: Unlimited locked apps and all 36 clouds.
-   - Price: for example $5.99 (Play converts it for other countries), then **Activate** it.
-4. **Test without paying:** Setup → License testing → add your Google account. On a phone signed in with that
+   - Price: $5.99 (Play converts it for other countries), then **Activate** it.
+4. **Create the subscription:** Monetize with Play → Products → Subscriptions → Create subscription:
+   - Product ID: `cloudlock_plus_monthly` (must match exactly) · Name: CloudLock Plus (monthly)
+   - Add a **base plan**: ID `monthly`, Auto-renewing, billing period **1 month**, price $0.99. **Activate** the
+     base plan. No free trial or offers are needed; the app buys the base plan.
+5. **Test without paying:** Setup → License testing → add your Google account. On a phone signed in with that
    account, install CloudLock from the internal testing link (not the APK from GitHub: purchases only work
    for installs from Google Play). The purchase sheet then offers test cards that are never charged.
 
-Until the product exists and is active, the Plus screen says "CloudLock Plus isn't on sale yet". On phones
-without the Play Store it explains that purchases need Google Play. Refunds are handled automatically: the next
-time CloudLock opens, Google Play reports Plus as not owned and the extra locked apps are released.
+Until at least one of the two is active, the Plus screen says "CloudLock Plus isn't on sale yet"; with only one
+active, it offers just that one. On phones without the Play Store it explains that purchases need Google Play.
+Refunds and ended subscriptions are handled automatically: the next time CloudLock opens, Google Play no longer
+lists Plus, so Plus turns off and the extra locked apps are released. A cancelled subscription keeps Plus until the
+end of the month already paid for, because Play lists it until then. Subscribers get a "Manage or cancel
+subscription" button on the Plus screen, as Google Play's subscription policy requires.
 
 **App access (for Google's reviewers):** answer **Yes, part of the app is restricted** (Plus is paid) and
 give the review code with these steps: open CloudLock → Settings → "See what Plus adds" → "Have a review code?"
