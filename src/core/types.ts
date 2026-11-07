@@ -78,6 +78,8 @@ export interface Settings {
   categories: CloudCategory[];
   /** First-launch setup finished. */
   onboarded: boolean;
+  /** A notification in the evening on days the lesson isn't done yet (see core/reminders.ts). */
+  reminders: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -87,6 +89,7 @@ export const DEFAULT_SETTINGS: Settings = {
   emergencyUnlocksPerDay: 2,
   categories: ['main', 'species', 'special'],
   onboarded: false,
+  reminders: true,
 };
 
 export const CLOUDS_PER_DAY_MIN = 1;

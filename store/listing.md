@@ -16,7 +16,7 @@ CloudLock: Learn the Clouds
 Lock distracting apps. Name the cloud in the photo to open them.
 ```
 
-## Full description (2414/4000)
+## Full description (2513/4000)
 
 ```text
 CloudLock is an app blocker that teaches you something. Turn every urge to scroll into a five-second look at the sky.
@@ -37,6 +37,7 @@ LEARN A FEW CLOUDS A DAY
 WHAT'S INSIDE
 • 36 clouds from the WMO International Cloud Atlas: the ten main types, their species, and rare skies like mammatus, roll clouds, noctilucent and mother-of-pearl clouds.
 • A daily streak, a collection with milestones, and your Sky IQ.
+• A gentle evening reminder on days you haven’t done your lesson (you can turn it off).
 • Light and dark mode.
 
 FREE, WITH AN OPTIONAL UPGRADE
